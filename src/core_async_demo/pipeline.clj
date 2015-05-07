@@ -38,7 +38,7 @@
 
 ;;read from file and put json on from-file-channel
 (do (async/go
-    (with-open [reader (io/reader "/Users/e20042/eve-data/data.txt")]
+    (with-open [reader (io/reader "PUT FILE LOCATION WITH EVE-DATA")]
      (doseq [line (line-seq reader)]
        (async/>!! from-file-channel line))
      (async/close! parsed-data-channel)))
