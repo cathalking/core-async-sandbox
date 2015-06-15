@@ -1,26 +1,53 @@
 (ns core-async-demo.channels
-  (:require [clojure.core.async :as async]))
+  (:require [clojure.core.async :refer :all]))
 
-;;create unbuffered channel
-(def unbuffered (async/chan))
+;;use the (chan) function to create an unbuffered channel
+(def unbuffered (chan))
 
-;;put something on channel
-(async/put! unbuffered "Hello" (fn [_] (println "Put Message: Hello")))
+;;we use a blocking put and blocking take to when communicating
+;;with channels in Ordinary Threads
+(let [c (chan 10)]
+  (>!! c "hello")
+  (assert (= "hello" (<!! c)))
+  (close! c))
 
-;;take value from channel
-(async/take! unbuffered #(println (str "Taken Message: " %)))
+;;because these actions are blocking, if we try to put a value onto an
+;;unbuffered channel it will block the main thread
+(let [c (chan)]
+  (>!! c "Hello")
+  (println "I'm blocked")
+  (println (<!! c))
+  (close! c))
 
-;;create a channel with buffer size 2
-(def buffered-channel (async/chan 2))
+;;To get around this we can put this operation in its own thread, therefore freeing
+;;up the main thread
+(let [c (chan)]
+  (thread (>!! c "Hello"))
+  (println (str (<!! c) " I'm not blocked"))
+  (close! c))
 
-;;put stuff on channel
-(async/put! buffered-channel "Hello" (fn [_] (println "Put Message: Hello")))
-(async/put! buffered-channel "World" (fn [_] (println "Put Message: World")))
-(async/put! buffered-channel "Blocked!!" (fn [_] (println "Put Message: Blocked!!")))
+;;We can use a GO-Block to execute its body asynchronously in a special thread pool
+(let [c (chan)]
+  (go (>! c "Hello"))
+  (println (<!! c))
+  (close! c))
 
-;;take value from channel
-(dotimes [times 3]
-  (async/take! buffered-channel #(println (str "Taken Message: " %))))
+;;A go block returns a channel which we can use to perform a blocking take
+(let [c (chan)]
+  (go (>! c "Hello"))
+  (println (<!! (go (<! c))))
+  (close! c))
 
-(async/>!! buffered-channel "Hello")
-(async/<!! buffered-channel)
+;;dropping-buffer silently drops new values
+(let [c (chan (dropping-buffer 1))]
+  (>!! c 1)
+  (>!! c 2)
+  (println (<!! c))
+  (close! c))
+
+;;sliding-buffer drops the current head value
+(let [c (chan (sliding-buffer 1))]
+  (>!! c 1)
+  (>!! c 2)
+  (println (<!! c))
+  (close! c))
