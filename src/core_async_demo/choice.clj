@@ -1,4 +1,4 @@
-(ns core-async-demo.select
+(ns core-async-demo.choice
   (:require [clojure.core.async :as async]))
 
 (def c1 (async/chan 1))
