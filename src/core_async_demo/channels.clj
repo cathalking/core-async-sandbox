@@ -4,8 +4,7 @@
 ;;use the (chan) function to create an unbuffered channel
 (def unbuffered (chan))
 
-;;we use a blocking put and blocking take to when communicating
-;;with channels in Ordinary Threads
+;;we use a blocking put and blocking take to via channels in Ordinary Threads
 (let [c (chan 10)]
   (>!! c "hello")
   (assert (= "hello" (<!! c)))
@@ -15,7 +14,7 @@
 ;;unbuffered channel it will block the main thread
 (let [c (chan)]
   (>!! c "Hello")
-  (println "I'm blocked")
+  (println "I'm blocked");; Unfortunately it blocks the repl
   (println (<!! c))
   (close! c))
 
@@ -26,7 +25,7 @@
   (println (str (<!! c) " I'm not blocked"))
   (close! c))
 
-;;We can use a GO-Block to execute its body asynchronously in a special thread pool
+;;We can use a go-block to execute its body asynchronously in a special thread pool
 (let [c (chan)]
   (go (>! c "Hello"))
   (println (<!! c))
@@ -42,6 +41,7 @@
 (let [c (chan (dropping-buffer 1))]
   (>!! c 1)
   (>!! c 2)
+  (println (<!! c))
   (println (<!! c))
   (close! c))
 

@@ -18,6 +18,9 @@
 
 ;; lets do something interesting and transform all values
 ;; inside the pipeline into Strings
+;
+;=======from=======>(map str)=====to=======>
+;
 (async/pipeline 1 to (map str) from)
 
 ;;put value into pipeline
