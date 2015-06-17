@@ -3,7 +3,7 @@
             [cheshire.core :as che]
             [clojure.java.io :as io]))
 
-(def file-loc "/Users/e20042/eve-data/data.txt")
+(def file-loc "eve-data/data.txt")
 
 (def parse-json (map (fn [json] (che/parse-string json true))))
 
