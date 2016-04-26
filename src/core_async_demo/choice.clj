@@ -1,16 +1,20 @@
 (ns core-async-demo.choice
-  (:require [clojure.core.async :as async]))
+  (:require [clojure.core.async :refer [chan go-loop 
+                                        >!! 
+                                        alts!!]]))
 
-(def c1 (async/chan 1))
-(def c2 (async/chan 1))
+(def c1 (chan 1))
+(def c2 (chan 1))
 
 
-(async/>!! c1 "from channel 1")
+;(async/>!! c1 "from channel 1")
 
 ;;If more than one value is available it will be a choice at random
-(async/go-loop []
-  (let [[val chan] (async/alts!! [c1 c2])]
-    (println val chan))
-  (recur))
+(defn choice []
+  (go-loop []
+    (let [[v c] (alts!! [c1 c2])]
+      (println "value :" v ", c :" c))
+    (recur))
+  nil)
 
-(async/>!! c1 "from channel 2")
+;(async/>!! c1 "from channel 2")
